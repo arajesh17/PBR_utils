@@ -31,9 +31,7 @@ def i_img(i, shape, img_closing, img_data, aff, sub_name):
     nib.save(i_nii, i_out_fname)
     print('Saved {!s} iteration at {}'.format(i, i_out_fname))
 
-def generate_seg(args):
-
-    mseid = args.mse
+def generate_seg(mseid, args):
     
     if args.ext:
         file_ext = args.ext
@@ -51,7 +49,7 @@ def generate_seg(args):
 
     volume = glob(os.path.join(working_dir, '*{}'.format(file_ext)))[0]
     
-    if args.nochop:
+    if not args.nochop:
         img_name = volume.split('nochop')[0] + 'nochop.nii.gz'
     else:
         img_name = volume.split(file_ext)[0]+'.nii.gz'
@@ -100,11 +98,17 @@ def generate_seg(args):
     
 
 if __name__ == '__main__' :
-    parser = argparse.ArgumentParser()
-    parser.add_argument('mseid', help= 'the mseid that you want to run the foramen magnum intensity correction on')
+    parser = argparse.ArgumentParser(help='This script fills the spinal cord segmented by .roi files created by jim with the mean intensity of the voxels on the periphery of the spinal cord segmentation')
+    parser.add_argument('mse', help= 'the mseid that you want to run the foramen magnum intensity correction on, you may also input lists of mseids in a txt file as long as each line contains one mseid')
     parser.add_argument('-x', '--ext', help= 'the extension of the filename that your .roi files are saved under the default is _10caudA.roi')
-    parser.add_argument('-nc', '--nochop', action='store_true', help= 'Enter 0 if you have saved your files not in the no_chop directory, this will allow the script to find the correct .roi files, default is 1')
+    parser.add_argument('-nc', '--nochop', action='store_true', help= 'Enter 1 if you have saved your files OUTSIDE of the no_chop directory, this will allow the script to find the correct .roi files' )
     parser.add_argument('-i', '--iter', help='Number of iterations of dilation you want to do around the spinal cord to get the CSF intensity, defaul is 1 iteration')
     parser.add_argument('-w', '--workingdirectory', help='directory in PBR where you stored the .roi files, default is "/mseid/alignment/baseline_mni/no_chop"')
     args = parser.parse_args()
-    generate_seg(args)
+
+    if '.txt' in args.mse: #Code to take text files
+        f = open(args.mse, 'r')
+        for mseid in f.read_lines():
+            generate_seg(mseid, args)
+    else: 
+        generate_seg(args.mse,args)
