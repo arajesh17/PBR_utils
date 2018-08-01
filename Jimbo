@@ -1,0 +1,6 @@
+#!/bin/sh
+JIM_HOME=/netopt/rhel7/versions/Jim/Jim7
+PATH=${PATH}:${JIM_HOME}:${JIM_HOME}/Unix
+export JIM_HOME PATH
+PROG=`basename $0`
+${JIM_HOME}/Jim $(pwd)/$@
